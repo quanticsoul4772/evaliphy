@@ -1,8 +1,15 @@
-import fs from 'fs';
-import path from 'path';
-import { execSync } from 'child_process';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
 
 export function createProject(projectName: string) {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const { version } = require(path.join(__dirname, '../package.json'));
+
     const rootPath = path.join(process.cwd(), projectName);
 
     if (fs.existsSync(rootPath)) {
@@ -16,8 +23,7 @@ export function createProject(projectName: string) {
     // 2. Create folder structure
     const structure: Record<string, any> = {
         evals: {
-            'example.eval.ts': `
-import { evaluate } from 'evaliphy';
+            'example.eval.ts': `import { evaluate } from 'evaliphy';
 
 evaluate('basic test', async ({ httpClient }) => {
   // add your evaluate code
@@ -25,8 +31,7 @@ evaluate('basic test', async ({ httpClient }) => {
 `
         },
         utils: {},
-        'evaliphy.config.ts': `
-import { defineConfig } from 'evaliphy';
+        'evaliphy.config.ts': `import { defineConfig } from 'evaliphy';
 
 export default defineConfig({
   baseUrl: 'http://localhost:8080',
@@ -45,8 +50,9 @@ export default defineConfig({
 `,
         'tsconfig.json': JSON.stringify({
             compilerOptions: {
-                target: "ES2020",
-                module: "CommonJS",
+                target: 'ES2020',
+                module: 'ESNext',
+                moduleResolution: 'bundler',
                 strict: true,
                 esModuleInterop: true,
                 skipLibCheck: true
@@ -56,19 +62,19 @@ export default defineConfig({
 
     createStructure(rootPath, structure);
 
-    // 3. Create FULL package.json
+    // 3. Create package.json
     const pkg = {
         name: projectName,
-        version: "1.0.0",
+        version: '1.0.0',
         private: true,
-        type: "module",
+        type: 'module',
         scripts: {
-            test: "evaliphy eval",
-            build: "tsc"
+            test: 'evaliphy eval',
+            build: 'tsc'
         },
         devDependencies: {
-            "evaliphy": "^1.0.0",
-            "typescript": "^5.0.0"
+            'evaliphy': `^${version}`,
+            typescript: '^5.0.0'
         }
     };
 
@@ -77,20 +83,10 @@ export default defineConfig({
         JSON.stringify(pkg, null, 2)
     );
 
-    // 4. Install dependencies
-    try {
-        console.log('📦 Installing dependencies...');
-        execSync('npm install', {
-            cwd: rootPath,
-            stdio: 'inherit'
-        });
-
-
-    } catch (err) {
-        console.error('Failed to install dependencies');
-    }
-
-    console.log(`\n✅ Project "${projectName}" is ready!`);
+    console.log(`\nProject "${projectName}" is ready!`);
+    console.log(`\nNext steps:`);
+    console.log(`  cd ${projectName}`);
+    console.log(`  npm test`);
 }
 
 function createStructure(basePath: string, structure: Record<string, any>) {

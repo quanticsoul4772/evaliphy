@@ -10,8 +10,8 @@
     "@evaliphy/client": "workspace:*",
     "@evaliphy/assertions": "workspace:*",
     "@evaliphy/ai": "workspace:*",
-    "commander": "catalog:",
+    "commander": "^12.1.0",
     "fast-glob": "^3.3.3",
-    "tsx": "catalog:"
+    "tsx": "^4.21.0"
   }
 }

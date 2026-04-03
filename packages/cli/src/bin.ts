@@ -1,15 +1,14 @@
 import { ConfigLoader } from '@evaliphy/core';
 import { program } from 'commander';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { handleFatalError, parseCLI } from './config/cliConfigUtil.js';
 import { createProject } from "./initProject/createFolderStructure.js";
 import { runRegistry } from './runner/runEval.js';
 
-const __dirname = fileURLToPath(new URL('.', import.meta.url));
-const packageJsonPath = join(__dirname, '../package.json');
-const { version } = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const { version } = require(path.join(__dirname, '../package.json'))
 
 program
     .name('evaliphy')
