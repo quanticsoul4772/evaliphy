@@ -39,7 +39,7 @@
     }
   },
   "bin": {
-    "evaliphy": "./dist/bin.mjs"
+    "evaliphy": "dist/bin.mjs"
   },
   "files": [
     "dist",
