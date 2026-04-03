@@ -40,4 +40,15 @@ yalc.lock
 **/readme.md
 readme.md
 
-consumer/
+
+runner.sh
+.npmrc
+
+debug**
+runner.sh
+
+.roo/*
+
+e2e-tests/report/**
+e2e-tests/node_modules/**
+**/node_modules/

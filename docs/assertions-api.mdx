@@ -1,0 +1,144 @@
+# API Reference: Assertions
+
+Evaliphy provides a professional, chainable assertion API designed for black-box QA testing of Generative AI. It focuses on observable behavior rather than internal ML metrics.
+
+## `expect<T>(input: string | T)`
+
+The entry point for all assertions.
+
+- **`input`**: Either a simple response string or a structured evaluation input object.
+- **Returns**: A `MatcherChain` object.
+
+### `AnswerEvalInput`
+
+For answer-related evaluations, use the `AnswerEvalInput` interface for full type safety and autocomplete.
+
+```typescript
+interface AnswerEvalInput {
+  response: string;           // The LLM's generated output
+  query: string;              // The user's original question
+  context?: string | string[]; // Optional golden context or retrieved chunks
+  metadata?: Record<string, any>; // Optional metadata for reporting
+}
+```
+
+---
+
+## Core Accuracy & Relevance
+
+### `toBeRelevant(options?: AssertionOptions)`
+
+Checks if the response directly addresses the user's prompt without dodging, being overly vague, or talking about unrelated topics.
+
+#### Example
+
+```typescript
+await expect({
+  query: "What is the capital of France?",
+  response: "Paris is the capital of France."
+}).toBeRelevant();
+```
+
+### `toBeFaithful(options?: AssertionOptions)`
+
+Checks if the response relies *only* on the provided context and contains zero hallucinations.
+
+#### Example
+
+```typescript
+await expect({
+  query: "What is the return policy?",
+  response: "You can return items within 30 days.",
+  context: "Returns are accepted within 30 days of purchase."
+}).toBeFaithful();
+```
+
+### `toBeGrounded(options?: AssertionOptions)`
+
+Checks if the claims made in the response are supported by the retrieved context. Similar to `toBeFaithful` but focuses strictly on the context-response relationship.
+
+#### Example
+
+```typescript
+await expect({
+  response: "The product costs $50.",
+  context: "Price list: Product A - $50, Product B - $30"
+}).toBeGrounded();
+```
+
+### `toBeCoherent(options?: AssertionOptions)`
+
+Checks if the response is logically consistent, well-structured, and easy to follow.
+
+#### Example
+
+```typescript
+await expect("The response is clear and logical.").toBeCoherent();
+```
+
+---
+
+## Safety & Guardrails
+
+### `toBeHarmless(options?: AssertionOptions)`
+
+Scans the response for toxicity, bias, hate speech, or dangerous instructions. Fails if the bot generates harmful content.
+
+### `toBeSafe(options?)`
+
+Alias for `toBeHarmless`. Scans the response for toxicity, bias, hate speech, or dangerous instructions.
+
+### `toNotRevealPII(options?)`
+
+Scans the response to ensure no Personally Identifiable Information (emails, phone numbers, SSNs, credit cards) was leaked in the output.
+
+---
+
+## The Ultimate Escape Hatch
+
+### `toSatisfy(customRubric, options?)`
+
+Pass a plain-English string describing exactly what the response should do. Uses LLM-as-a-judge to evaluate the custom rule.
+
+#### Example
+
+```typescript
+await expect(data.answer).toSatisfy("Maintain a polite, helpful tone");
+```
+
+---
+
+## Assertion Options
+
+All matchers accept an optional `options` object:
+
+- **`threshold`**: Minimum score (0.0 to 1.0) to pass. Default: `0.7`.
+- **`model`**: Override the default LLM judge model (e.g., `"gpt-4o"`).
+- **`debug`**: If `true`, logs additional judge reasoning to the console.
+- **`returnResult`**: If `true`, returns an `EvalResult` instead of throwing an error.
+- **`continueOnFailure`**: If `true`, the test continues even if the assertion fails. Default: `true`.
+
+---
+
+## Results & Errors
+
+### Failure Messages
+
+When an assertion fails, Evaliphy throws a professional error message with human-readable reasoning:
+
+```text
+✗ toAnswerQuery failed
+
+  Query:
+    "Where is my API key?"
+
+  Response:
+    "You can find your API key in the car."
+
+  Reason (gpt-4o-mini):
+    "The response refers to a 'car key', which does not answer the user's
+     question about an API key location."
+
+  Models:
+    - gpt-4o-mini: ✗ (score 0.18)
+```

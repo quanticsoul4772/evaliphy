@@ -1,0 +1,84 @@
+# Quick Start
+
+Get up and running with Evaliphy in minutes. Evaliphy is a QA-first SDK for evaluating RAG applications with the simplicity of a modern test framework.
+
+## 1. Initialize your project
+
+The easiest way to start is by using the Evaliphy CLI to create a recommended project structure.
+
+```bash
+npx evaliphy init my-eval-project
+cd my-eval-project
+```
+
+This command creates a directory with the following structure:
+- `evals/`: Directory for your evaluation files.
+- `evaliphy.config.ts`: Main configuration file.
+- `package.json`: Project dependencies and scripts.
+- `tsconfig.json`: TypeScript configuration.
+
+## 2. Configure your environment
+
+Evaliphy uses an LLM as a judge to evaluate your RAG system. You'll need to configure your LLM provider in `evaliphy.config.ts`.
+
+```typescript
+import { defineConfig } from 'evaliphy';
+
+export default defineConfig({
+  llmAsJudgeConfig: {
+    model: 'gpt-4o-mini',
+    provider: {
+      type: 'openai',
+      apiKey: process.env.OPENAI_API_KEY,
+    },
+  },
+  http: {
+    baseUrl: 'https://api.your-rag-app.com',
+  },
+});
+```
+
+## 3. Write your first evaluation
+
+Create a file named `evals/basic.eval.ts`:
+
+```typescript
+import { evaluate, expect } from 'evaliphy';
+
+evaluate('Greeting Evaluation', async ({ httpClient }) => {
+  const query = "Hello, how can you help me today?";
+  
+  // 1. Call your RAG application
+  const response = await httpClient.post('/chat', { message: query });
+  const { answer, context } = await response.json();
+
+  // 2. Assert on the output
+  await expect({
+    query,
+    response: answer,
+    context: context
+  }).toBeRelevant();
+  
+  await expect({
+    query,
+    response: answer,
+    context: context
+  }).toBeFaithful();
+});
+```
+
+## 4. Run the evaluation
+
+Execute your evaluations using the CLI:
+
+```bash
+npm test
+```
+
+Or directly via npx:
+
+```bash
+npx evaliphy eval
+```
+
+Evaliphy will discover all `.eval.ts` files in your `evals` directory, execute them, and generate a report.

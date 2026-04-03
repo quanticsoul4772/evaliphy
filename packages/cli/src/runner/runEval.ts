@@ -1,76 +1,288 @@
-import { getRegistry, EvalTest, getHooks } from '@evaliphy/core';
-import { EvaluationFixtures } from '@evaliphy/core';
+import {
+    clearRegistry,
+    ConfigLoader,
+    emitter,
+    EvaliphyConfig,
+    EvaliphyError,
+    EvaliphyErrorCode,
+    EvalTest,
+    getFileConfig,
+    getHooks,
+    getRegistry,
+    logger,
+    withConfig,
+    withResult
+} from 'evaliphy-core';
+import path from 'path';
+import { discoverFiles } from '../discovery/discoverFiles.js';
+import { createFixtures, registerReporters, resolveReporters } from './runnerUtil.js';
 
-export interface CLIConfig {
-    timeout: number
-}
+/**
+ * Runs a single evaluation test case.
+ */
+async function runSingle(evalCase: EvalTest, config: EvaliphyConfig, runId: string, file: string) {
+    const start = Date.now();
+    const fixtures = createFixtures(config);
+    const testLog = logger.child({ testName: evalCase.name });
 
-function createFixtures(): EvaluationFixtures {
-    return { httpClient: null }
-}
+    testLog.debug({ config }, 'Test started');
 
-async function runSingle(evalCase: EvalTest, timeout: number) {
-    const start = Date.now()
-    const fixtures = createFixtures()
+    await emitter.emit('test:start', { runId, testName: evalCase.name, config });
+
+    const result: any = {
+        sampleId: evalCase.name,
+        evalFile: path.relative(process.cwd(), file),
+        status: 'passed',
+        inputs: { query: '', context: '', response: '' },
+        assertions: {},
+        http: { status: 0, url: '', method: 'POST' },
+        timings: { ttfb: 0, total: 0 }
+    };
 
     try {
-        // run beforeEach hooks
-        for (const hook of getHooks('beforeEach')) {
-            await hook(fixtures)
-        }
+        await withResult(result, async () => {
+            await executeHooks('beforeEach', evalCase, fixtures, runId, testLog, true);
 
-        // run the eval
-        await Promise.race([
-            evalCase.fn(fixtures),
-            new Promise<never>((_, reject) =>
-                setTimeout(() => reject(new Error(`Timed out after ${timeout}ms`)), timeout)
-            )
-        ])
+            testLog.debug('Started running eval test');
 
-        // run afterEach hooks
-        for (const hook of getHooks('afterEach')) {
-            await hook(fixtures)
-        }
+            await withConfig(config, () => Promise.race([
+                evalCase.fn(fixtures),
+                new Promise<never>((_, reject) =>
+                    setTimeout(() => reject(new Error(`Timed out after ${config.timeout}ms`)), config.timeout),
+                )
+            ]));
+        });
 
-        console.log(`  ✓  ${evalCase.name} (${Date.now() - start}ms)`)
+        const duration = Date.now() - start;
+        result.timings.total = duration;
+        await emitter.emit('test:pass', { runId, testName: evalCase.name, duration, result } as any);
     } catch (err) {
-        // still run afterEach on failure
-        for (const hook of getHooks('afterEach')) {
-            await Promise.resolve(hook(fixtures)).catch(() => {})
+        const duration = Date.now() - start;
+        const error = err instanceof Error ? err : new Error(String(err));
+        
+        result.status = 'failed';
+        result.timings.total = duration;
+        if (!error.message.includes('failed:')) {
+            result.error = {
+                message: error.message,
+                type: error.name,
+                stack: error.stack
+            };
         }
 
-        const message = err instanceof Error ? err.message : String(err)
-        console.log(`  ✗  ${evalCase.name}\n     → ${message}`)
-        throw err
+        await emitter.emit('test:fail', { runId, testName: evalCase.name, duration, error, result } as any);
+
+        testLog.debug(error.message);
+        throw err;
+    } finally {
+        await executeHooks('afterEach', evalCase, fixtures, runId, testLog, false);
     }
 }
 
-export async function runRegistry(config: CLIConfig): Promise<void> {
-    const registry = getRegistry()
+/**
+ * Helper to execute hooks (beforeEach/afterEach) and emit events.
+ */
+async function executeHooks(
+    type: 'beforeEach' | 'afterEach',
+    evalCase: EvalTest,
+    fixtures: any,
+    runId: string,
+    testLog: any,
+    rethrow: boolean
+) {
+    for (const hook of getHooks(type)) {
+        testLog.debug(`Started running ${type} hook`);
+        const hookStart = Date.now();
+        await emitter.emit('hook:start', { runId, testName: evalCase.name, hook: type });
+        try {
+            await Promise.resolve(hook(fixtures));
+            await emitter.emit('hook:end', { runId, testName: evalCase.name, hook: type, duration: Date.now() - hookStart });
+        } catch (hookErr) {
+            const error = hookErr as Error;
+            await emitter.emit('hook:fail', { runId, testName: evalCase.name, hook: type, error });
+            testLog.error({ err: error, hook: type }, 'Hook failed');
+            if (rethrow) {
+                throw new EvaliphyError(
+                    EvaliphyErrorCode.HOOK_FAILED,
+                    `Hook '${type}' failed for test '${evalCase.name}': ${error.message}`,
+                    'Check your hook implementation for errors.',
+                    error
+                );
+            }
+        }
+    }
+}
 
-    if (registry.length === 0) {
-        console.warn('\n⚠ No evals found. Did you call evaluate() in your file?\n')
-        return
+/**
+ * Resolves the list of files to run based on explicit input or discovery.
+ */
+async function getFilesToRun(explicitFile: string | undefined, config: EvaliphyConfig): Promise<string[]> {
+    if (explicitFile) {
+        const fullPath = path.resolve(process.cwd(), explicitFile);
+        return [fullPath];
     }
 
-    console.log(`\n🧪 Running ${registry.length} eval(s)...\n`)
+    // Find baseDir when configPath is given otherwise fallback to root directory
+    const baseDir = config.configFile ? path.dirname(config.configFile) : process.cwd();
 
-    let failed = 0
+    return discoverFiles({
+        testDir: path.resolve(baseDir, config.evalDir!),
+        testMatch: config.testMatch!,
+        testIgnore: config.testIgnore!,
+    });
+}
+
+/**
+ * Dynamically imports an evaluation file and ensures the registry is cleared before if needed.
+ */
+async function importEvalFile(file: string) {
+    const fileUrl = path.isAbsolute(file) ? `file://${file}` : `file://${path.resolve(process.cwd(), file)}`;
+    try {
+        // To ignore the node js cache (bypass the Node.js module cache)
+        await import(`${fileUrl}?update=${Date.now()}`);
+    } catch (err: any) {
+        throw new EvaliphyError(
+            EvaliphyErrorCode.INTERNAL_ERROR,
+            `Failed to import evaluation file: ${file}`,
+            'Ensure the file path is correct and it is a valid ES module.',
+            err
+        );
+    }
+}
+
+/**
+ * First pass: discover total tests to run (used for reporting total counts).
+ */
+async function discoverTotalTests(files: string[], config: EvaliphyConfig, runId: string): Promise<number> {
+    let total = 0;
+
+    await emitter.emit('discovery:start', { runId, dir: config.evalDir! });
+
+    for (const file of files) {
+        clearRegistry();
+        try {
+            await importEvalFile(file);
+            const count = getRegistry().length;
+            total += count;
+            await emitter.emit('discovery:file', { runId, file, testCount: count });
+        } catch (err) {
+            logger.error({ err, file }, 'Failed to import file during discovery');
+            // We continue discovery even if one file fails
+        }
+    }
+
+    await emitter.emit('discovery:end', { runId, fileCount: files.length, totalTests: total });
+    return total;
+}
+
+/**
+ * Runs all evaluations defined in a single file.
+ */
+async function runTestsInFile(file: string, baseConfig: EvaliphyConfig, runId: string): Promise<{ passed: number, failed: number }> {
+    clearRegistry();
+
+    try {
+        await importEvalFile(file);
+    } catch (err) {
+        logger.error({ err, file }, 'Failed to import file for execution');
+        return { passed: 0, failed: 0 };
+    }
+
+    // After import, evaluate.use() have been called, important for config.
+    const fileConfig = getFileConfig();
+    const configLoader = ConfigLoader.getInstance();
+    const config = await configLoader.load(process.cwd(), fileConfig);
+
+    const registry = getRegistry();
+    if (registry.length === 0) {
+        logger.warn({ file }, 'No evals found in file');
+        return { passed: 0, failed: 0 };
+    }
+
+    let passed = 0;
+    let failed = 0;
 
     for (const evalCase of registry) {
         try {
-            await runSingle(evalCase, config.timeout)
+            await runSingle(evalCase, config, runId, file);
+            passed++;
         } catch {
-            failed++
+            failed++;
+        }
+    }
+    return { passed, failed };
+}
+
+/**
+ * Main entry point for running the test registry.
+ */
+export async function runRegistry(explicitFile?: string): Promise<void> {
+
+    // Initial load to get base config (CLI overrides + global config)
+    const configLoader = ConfigLoader.getInstance();
+    let config = await configLoader.load();
+
+    const runId = Math.random().toString(36).substring(7);
+    const startTime = Date.now();
+
+    registerReporters(resolveReporters(config));
+
+    const filesToRun = await getFilesToRun(explicitFile, config);
+    if (filesToRun.length === 0) {
+        throw new EvaliphyError(
+            EvaliphyErrorCode.NO_EVALS_FOUND,
+            `No evaluation files found matching the criteria.`,
+            explicitFile ? `Check if the file '${explicitFile}' exists.` : `Check your config (evalDir: ${config.evalDir}, match: ${config.testMatch})`
+        );
+    }
+
+    // Discover tests across all selected files for reporting
+    let totalTests = 0;
+    if (explicitFile) {
+        // For a single file, we can just import it once to get the count
+        clearRegistry();
+        await importEvalFile(filesToRun[0]);
+        totalTests = getRegistry().length;
+
+        if (totalTests === 0) {
+            throw new EvaliphyError(
+                EvaliphyErrorCode.NO_EVALS_FOUND,
+                `The file '${explicitFile}' contains no evaluation tests.`,
+                'Ensure you are using the evaluate() function to define your tests.'
+            );
+        }
+    } else {
+        totalTests = await discoverTotalTests(filesToRun, config, runId);
+        if (totalTests === 0) {
+            throw new EvaliphyError(
+                EvaliphyErrorCode.NO_EVALS_FOUND,
+                'No evaluation tests discovered in the specified directory.',
+                'Ensure your test files have the .eval.ts or .eval.js extension and use the evaluate() function.'
+            );
         }
     }
 
-    console.log(`\n${failed === 0 ? '✅ All passed' : `❌ ${failed} failed`}\n`)
+    await emitter.emit('run:start', {
+        runId,
+        totalTests,
+        resolvedConfig: config
+    });
 
-    if (failed > 0) process.exit(1)
+    let totalPassed = 0;
+    let totalFailed = 0;
+
+    for (const file of filesToRun) {
+        const { passed, failed } = await runTestsInFile(file, config, runId);
+        totalPassed += passed;
+        totalFailed += failed;
+    }
+
+    await emitter.emit('run:end', {
+        runId,
+        passed: totalPassed,
+        failed: totalFailed,
+        duration: Date.now() - startTime
+    });
+
+    if (totalFailed > 0) process.exit(1);
 }
-
-
-
-
-

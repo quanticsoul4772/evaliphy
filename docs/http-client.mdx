@@ -1,0 +1,79 @@
+# HTTP Client
+
+Evaliphy provides a built-in HTTP client fixture to simplify calling your RAG application's API. It's a higher-level interface over the native Fetch API, automatically handling retries, timeouts, and logging.
+
+## Usage in Evaluations
+
+The `httpClient` is provided as a fixture in the `evaluate` function.
+
+```typescript
+import { evaluate } from 'evaliphy';
+
+evaluate('My RAG Test', async ({ httpClient }) => {
+  const response = await httpClient.post('/chat', {
+    query: "What is Evaliphy?"
+  });
+
+  const data = await response.json();
+  // ... assertions
+});
+```
+
+## Methods
+
+### `post(url, payload, options?)`
+Sends a POST request. The payload is automatically serialized to JSON.
+
+```typescript
+const response = await httpClient.post('/api/v1/query', { text: "Hello" });
+```
+
+### `get(url, options?)`
+Sends a GET request.
+
+```typescript
+const response = await httpClient.get('/api/v1/status');
+```
+
+### `put(url, payload, options?)`
+Sends a PUT request.
+
+### `patch(url, payload, options?)`
+Sends a PATCH request.
+
+### `delete(url, options?)`
+Sends a DELETE request.
+
+### `stream(url, payload, options?)`
+Initiates a streaming request, suitable for LLM completions or Server-Sent Events (SSE). Returns an async iterator.
+
+```typescript
+const stream = await httpClient.stream('/api/v1/chat/stream', { query: "..." });
+for await (const chunk of stream) {
+  console.log(chunk);
+}
+```
+
+## Handling Responses
+
+The `httpClient` methods return an `EvalResponse` object.
+
+- `response.json()`: Parses the response body as JSON.
+- `response.text()`: Returns the response body as text.
+- `response.status`: The HTTP status code.
+- `response.ok`: Boolean indicating if the request was successful (status 200-299).
+- `response.headers`: The response headers.
+
+## Session Management
+
+Use `withSession` to create a scoped client that includes a specific session header, useful for multi-turn conversations.
+
+```typescript
+const sessionClient = httpClient.withSession('X-Session-ID', 'user-123');
+await sessionClient.post('/chat', { message: "First turn" });
+await sessionClient.post('/chat', { message: "Second turn" });
+```
+
+## Configuration
+
+The HTTP client is configured via the `http` property in `evaliphy.config.ts`. See the [Configuration](/docs/configuration) page for details.

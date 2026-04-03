@@ -7,7 +7,19 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true
-  }
+    "outDir": "dist",
+    "rootDir": ".",
+    "paths": {
+      "evaliphy-core": ["./packages/core/src/index.ts"],
+      "evaliphy-cli": ["./packages/cli/src/bin.ts"],
+      "evaliphy-reporters": ["./packages/reporters/src/index.ts"],
+      "evaliphy-ai": ["./packages/ai/src/index.ts"],
+      "evaliphy-assertions": ["./packages/assertions/src/index.ts"]
+    }
+  },
+  "include": [
+    "packages/*/src/**/*",
+    "tsdown.config.ts"
+  ],
+  "exclude": ["dist", "node_modules"]
 }

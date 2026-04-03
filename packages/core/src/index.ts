@@ -1,10 +1,24 @@
-import {EvaliphyError} from "./error/errors.js";
+import { ConfigLoader } from "./config/configLoader.js";
+import { EvaliphyError, EvaliphyErrorCode } from "./error/errors.js";
 
+/**
+ * Internal exports for workspace packages.
+ */
 export { evaluate } from './evaluate.js';
+export { logger } from './logger.js';
 
+export { clearRegistry, getFileConfig, getHooks, getRegistry, registerEval } from './collection/registry.js';
+export * from './collection/types.js';
 
-export { getRegistry, registerEval , getHooks} from './collection/registry.js';
-export type { EvalTest, EvaluationFixtures, Awaitable } from './collection/types.js';
+export { ConfigLoader, EvaliphyError, EvaliphyErrorCode };
 
-export {EvaliphyError};
+  export { getConfig, getResult, withConfig, withResult } from './config/context.js';
+  export { mergeConfigs } from './config/mergeConfig.js';
+
+export { defineConfig } from './config/defineConfig.js';
+
+export * from './config/types.js';
+export * from './events/emitter.js';
+export * from './events/payloads.js';
+export * from './events/types.js';
 

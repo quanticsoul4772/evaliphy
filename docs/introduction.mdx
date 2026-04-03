@@ -1,0 +1,24 @@
+# Introduction
+
+Evaliphy is the first QA-centric SDK for evaluating Retrieval-Augmented Generation (RAG) applications. It treats RAG systems as a black box, allowing quality engineers to validate AI behavior through clear, readable assertions without needing to understand retrieval pipelines, prompt engineering, or complex ML metrics.
+
+## Why Evaliphy?
+
+Building RAG applications is easy, but evaluating them at scale is hard. Evaliphy bridges the gap by providing:
+
+- **QA-First Workflow**: Write evaluations using the same mental model you use for Playwright or Vitest.
+- **Actionable Assertions**: Forget "Cosine Similarity." Assert against what matters: `toBeFaithful()`, `toBeSupportedBy()`, and `toNotHallucinate()`.
+- **Zero-Config LLM Judge**: Battle-tested prompts for OpenAI and Anthropic handled automatically.
+- **Production-Grade Client**: A high-performance HTTP client built specifically for LLM evaluation (streaming, retries, performance timings).
+- **Seamless CI/CD**: Run evaluations in GitHub Actions, GitLab CI, or Jenkins with standard Node.js commands.
+
+## Key Concepts
+
+- **Evaluation File**: A `.eval.ts` file that defines your test cases using the `evaluate` SDK.
+- **Fixtures**: Pre-configured objects injected into your test functions (e.g., `httpClient`).
+- **LLM Judge**: The underlying engine that evaluates your assertions using advanced LLM-as-a-judge workflows.
+- **Reporting**: Real-time feedback and human-readable failure reasons for every evaluation.
+
+## Next Steps
+
+Ready to trust your RAG pipeline? Check out the [Quick Start](/docs/discovery) guide to begin evaluating your first AI application in under 5 minutes.

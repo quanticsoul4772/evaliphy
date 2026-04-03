@@ -1,18 +1,10 @@
 {
-  "name": "@evaliphy/core",
-  "version": "0.0.1",
+  "name": "evaliphy-core",
+  "version": "1.0.0",
+  "private": true,
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./src/index.ts",
   "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
-  "files": ["dist"],
-  "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "tsc -p tsconfig.json --watch"
+    ".": "./src/index.ts"
   }
 }

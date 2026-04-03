@@ -1,0 +1,73 @@
+# Configuration
+
+Evaliphy is configured via an `evaliphy.config.ts` file in your project root. Use the `defineConfig` helper for full TypeScript support.
+
+```typescript
+import { defineConfig } from 'evaliphy';
+
+export default defineConfig({
+  // ... configuration options
+});
+```
+
+## Configuration Options
+
+### `llmAsJudgeConfig`
+Configures the LLM used for assertions.
+
+- `model`: The model string (e.g., "gpt-4o-mini").
+- `provider`: The LLM provider configuration.
+  - `type`: 'openai', 'anthropic', 'google', 'mistral', 'groq', 'cohere', or 'gateway'.
+  - `apiKey`: Optional API key (falls back to environment variables).
+  - `url`: Required for 'gateway' provider.
+- `temperature`: Generation temperature (default: 0).
+- `maxTokens`: Maximum tokens for the judge's response (default: 1000).
+- `promptsDir`: Directory where custom prompts are stored.
+
+### `http`
+Global settings for the `httpClient` fixture.
+
+- `baseUrl`: The base URL for all request paths.
+- `timeout`: Global request timeout in milliseconds.
+- `headers`: Common HTTP headers to send with every request.
+- `retry`: Global retry configuration.
+  - `attempts`: Number of retry attempts.
+  - `delay`: Delay between retries in milliseconds.
+
+### `evalDir`
+The root directory to search for evaluation files (default: `./evals`).
+
+### `testMatch`
+Glob patterns to match evaluation files (default: `['**/*.eval.ts', '**/*.eval.js']`).
+
+### `reporters`
+List of reporters to use for evaluation results. Can be a string name of a built-in reporter ('console', 'html', 'json') or a custom reporter instance.
+
+### `timeout`
+Global timeout for individual test functions in milliseconds.
+
+## Example Configuration
+
+```typescript
+import { defineConfig } from 'evaliphy';
+
+export default defineConfig({
+  llmAsJudgeConfig: {
+    model: 'gpt-4o-mini',
+    provider: {
+      type: 'openai',
+      apiKey: process.env.OPENAI_API_KEY,
+    },
+  },
+  http: {
+    baseUrl: 'http://localhost:8080',
+    timeout: 30000,
+    retry: {
+      attempts: 3,
+      delay: 1000,
+    },
+  },
+  evalDir: './evals',
+  reporters: ['console', 'html'],
+});
+```

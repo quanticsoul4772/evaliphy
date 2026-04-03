@@ -1,0 +1,159 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RunReport",
+  "type": "object",
+  "required": ["meta", "summary", "results"],
+  "additionalProperties": false,
+
+  "properties": {
+
+    "meta": {
+      "type": "object",
+      "required": ["runId", "timestamp", "duration", "evalFiles", "config"],
+      "additionalProperties": false,
+      "properties": {
+        "runId":       { "type": "string" },
+        "timestamp":   { "type": "string", "format": "date-time" },
+        "duration":    { "type": "number", "description": "total run duration in ms" },
+        "evalFiles":   { "type": "array", "items": { "type": "string" } },
+        "config": {
+          "type": "object",
+          "description": "snapshot of the resolved config used for this run",
+          "properties": {
+            "runner": {
+              "type": "object",
+              "properties": {
+                "timeout":     { "type": "number" },
+              }
+            },
+            "http": {
+              "type": "object",
+              "properties": {
+                "baseUrl": { "type": "string" },
+                "timeout": { "type": "number" }
+              }
+            },
+            "judge": {
+              "type": "object",
+              "properties": {
+                "model":      { "type": "string" },
+                "timeout":    { "type": "number" },
+                "promptsDir": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "summary": {
+      "type": "object",
+      "required": ["total", "passed", "failed", "passRate", "byAssertion"],
+      "additionalProperties": false,
+      "properties": {
+        "total":    { "type": "number" },
+        "passed":   { "type": "number" },
+        "failed":   { "type": "number" },
+        "passRate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "byAssertion": {
+          "type": "object",
+          "description": "keyed by assertion name e.g. toBeFaithful()",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["total", "passed", "failed", "passRate", "avgScore"],
+            "additionalProperties": false,
+            "properties": {
+              "total":    { "type": "number" },
+              "passed":   { "type": "number" },
+              "failed":   { "type": "number" },
+              "passRate": { "type": "number", "minimum": 0, "maximum": 1 },
+              "avgScore": { "type": "number", "minimum": 0, "maximum": 1 }
+            }
+          }
+        }
+      }
+    },
+
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["sampleId", "evalFile", "status", "inputs", "assertions", "http", "timings"],
+        "additionalProperties": false,
+        "properties": {
+
+          "sampleId": { "type": "string" },
+          "evalFile": { "type": "string" },
+          "status":   { "type": "string", "enum": ["passed", "failed", "error"] },
+
+          "inputs": {
+            "type": "object",
+            "required": ["query", "context", "response"],
+            "additionalProperties": false,
+            "properties": {
+              "query":    { "type": "string" },
+              "context":  { "type": "string" },
+              "response": { "type": "string" },
+              "expected": { "type": "string" }
+            }
+          },
+
+          "assertions": {
+            "type": "object",
+            "description": "keyed by assertion name",
+            "additionalProperties": {
+              "type": "object",
+              "required": ["score", "passed", "reason", "durationMs", "llmTokens"],
+              "additionalProperties": false,
+              "properties": {
+                "score":      { "type": "number", "minimum": 0, "maximum": 1 },
+                "passed":     { "type": "boolean" },
+                "reason":     { "type": "string" },
+                "threshold":  { "type": "number", "minimum": 0, "maximum": 1 },
+                "durationMs": { "type": "number" }
+                "llmTokens": { "type": "number" }
+              }
+            }
+          },
+
+          "http": {
+            "type": "object",
+            "required": ["status", "url", "method"],
+            "additionalProperties": false,
+            "properties": {
+              "status": { "type": "number" },
+              "url":    { "type": "string" },
+              "method": { "type": "string", "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"] }
+            }
+          },
+
+          "timings": {
+            "type": "object",
+            "required": ["ttfb", "total"],
+            "additionalProperties": false,
+            "properties": {
+              "ttfb":      { "type": "number", "description": "ms to first byte" },
+              "total":     { "type": "number", "description": "ms total http duration" },
+              "streamEnd": { "type": "number", "description": "ms to last chunk, streaming only" },
+              "judgeMs":   { "type": "number", "description": "ms spent on all judge calls" }
+            }
+          },
+
+          "error": {
+            "type": "object",
+            "description": "only present when status is error",
+            "required": ["message", "type"],
+            "additionalProperties": false,
+            "properties": {
+              "message": { "type": "string" },
+              "type":    { "type": "string" },
+              "stack":   { "type": "string" }
+            }
+          }
+
+        }
+      }
+    }
+
+  }
+}

@@ -1,0 +1,5 @@
+query,expected_answer,context
+"How do I reset my password?","To reset your password, go to the login page and click on 'Forgot Password'. Follow the instructions sent to your email.","Users can reset their passwords via the 'Forgot Password' link on the login screen. An email with a reset link will be sent to the registered address."
+"What is the refund policy?","You can request a full refund within 30 days of purchase if you are not satisfied with the service.","Our refund policy allows for a 100% money-back guarantee within the first 30 days of any subscription plan."
+"Does Evaliphy support Python?","Currently, Evaliphy is a TypeScript/Node.js SDK. Python support is on the roadmap for Q4.","Evaliphy is built for the Node.js ecosystem. We are planning to release a Python version in the fourth quarter of this year."
+"How to contact support?","You can contact support by emailing support@evaliphy.ai or through the live chat on our website.","Support is available 24/7 via email at support@evaliphy.ai. You can also use the chat widget in the bottom right corner of the dashboard."

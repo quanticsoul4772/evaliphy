@@ -1,0 +1,17 @@
+{
+  "name": "e2e-tests",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "eval": "node ../dist/index.cjs eval --eval-dir=./e2e-tests/evals"
+  },
+  "dependencies": {
+    "@types/node": "^25.5.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.33.0"
+}

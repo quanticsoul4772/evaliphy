@@ -1,16 +1,17 @@
 {
-  "name": "evaliphy",
-  "version": "0.0.1",
+  "name": "evaliphy-cli",
+  "version": "1.0.0",
+  "private": true,
   "type": "module",
-  "bin": {
-    "evaliphy": "./dist/bin.js"
-  },
+  "main": "./src/bin.ts",
   "dependencies": {
-    "@evaliphy/core": "workspace:*",
-    "commander": "^12.1.0",
-    "tsx": "^4.21.0"
-  },
-  "scripts": {
-    "build": "tsc -p tsconfig.json && chmod +x dist/bin.js"
+    "evaliphy-core": "workspace:*",
+    "evaliphy-reporters": "workspace:*",
+    "evaliphy-client": "workspace:*",
+    "evaliphy-assertions": "workspace:*",
+    "evaliphy-ai": "workspace:*",
+    "commander": "catalog:",
+    "fast-glob": "^3.3.3",
+    "tsx": "catalog:"
   }
 }

@@ -1,0 +1,76 @@
+import type { EvaliphyConfig, ILLMClient } from 'evaliphy-core';
+import { z } from 'zod';
+
+export interface EvalInput {
+  response: string;
+  query?: string;
+  context?: string | string[];
+  history?: Array<{ role: string; content: string }>;
+  metadata?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+/**
+ * Input for answer-related evaluations.
+ */
+export interface EvaluationSample extends EvalInput {
+  query: string;
+}
+
+export interface EvalResult {
+  pass: boolean;
+  score?: number;
+  reason: string;
+  modelResults: Array<{
+    model: string;
+    score?: number;
+    pass: boolean;
+    reason: string;
+  }>;
+}
+
+export interface AssertionResult {
+  assertion: string;
+  passed: boolean;
+  score: number;
+  reason: string;
+  threshold: number;
+  usedLLM: boolean;
+  usage?: {
+    totalTokens: number;
+    model: string;
+    provider: string;
+    durationMs: number;
+  };
+  duration: number;
+}
+
+/**
+ * Configuration for assertion.
+ */
+export interface AssertionOptions {
+  threshold?: number;
+  model?: string;
+  debug?: boolean;
+  promptVersion?: string;
+  returnResult?: boolean;
+  /**
+   * Whether to continue test execution even if this assertion fails.
+   * Overrides global `llmAsJudgeConfig.continueOnFailure`.
+   */
+  continueOnFailure?: boolean;
+}
+
+export interface AssertionContext {
+  input: EvalInput;
+  options: AssertionOptions;
+  llmClient: ILLMClient;
+  config: EvaliphyConfig;
+}
+
+
+export const JudgeResponseSchema = z.object({
+  passed: z.boolean(),
+  score: z.number().min(0).max(1),
+  reason: z.string(),
+});

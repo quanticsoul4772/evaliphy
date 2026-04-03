@@ -1,0 +1,252 @@
+{
+  "results": [
+    {
+      "sampleId": "Knowledge Base: Accuracy and Grounding",
+      "evalFile": "e2e-tests/evals/basic.eval.ts",
+      "status": "failed",
+      "inputs": {
+        "query": "How do I reset my password?",
+        "context": "Users can reset their passwords via the 'Forgot Password' link on the login screen.",
+        "response": "To help you reset your password, I need to know which service or platform you are trying to reset your password for. However, here are general steps you can follow for most online accounts:\n\n1. **Go to the Login Page**: Navigate to the login page of the service you want to access.\n\n2. **Find the 'Forgot Password?' Link**: Look for a link that says “Forgot Password?” or “Reset Password.” This is usually located near the password entry field.\n\n3. **Enter Your Email or Username**: You may be prompted to enter your email address or username associated with your account.\n\n4. **Check Your Email**: After submitting your information, check your email inbox for a password reset link or code. Make sure to check your spam/junk folder if you don’t see it.\n\n5. **Follow the Instructions**: Click on the link in the email or enter the code (if required) and follow the prompts to create a new password.\n\n6. **Create a New Password**: Choose a strong, unique password that you haven’t used before for this account, then confirm it.\n\n7. **Log In**: Once your password has been reset, return to the login page and sign in with your new password.\n\nIf you tell me which service you're trying to reset your password for, I can provide more specific instructions."
+      },
+      "assertions": {
+        "toBeFaithful": {
+          "score": 0.5,
+          "passed": false,
+          "reason": "The response includes general steps for resetting a password but introduces speculation and information not present in the context.",
+          "threshold": 0.8,
+          "durationMs": 2024,
+          "llmTokens": 504
+        }
+      },
+      "http": {
+        "status": 200,
+        "url": "http://localhost:8000/api/generate",
+        "method": "POST"
+      },
+      "timings": {
+        "ttfb": 5642,
+        "total": 7679
+      }
+    },
+    {
+      "sampleId": "Knowledge Base: Accuracy and Grounding",
+      "evalFile": "e2e-tests/evals/basic.eval.ts",
+      "status": "failed",
+      "inputs": {
+        "query": "How do I reset my password?",
+        "context": "Users can reset their passwords via the 'Forgot Password' link on the login screen.",
+        "response": "To help you reset your password, I need to know which service or platform you are trying to reset your password for. However, here are general steps you can follow for most online accounts:\n\n1. **Go to the Login Page**: Navigate to the login page of the service you want to access.\n\n2. **Find the 'Forgot Password?' Link**: Look for a link that says “Forgot Password?” or “Reset Password.” This is usually located near the password entry field.\n\n3. **Enter Your Email or Username**: You may be prompted to enter your email address or username associated with your account.\n\n4. **Check Your Email**: After submitting your information, check your email inbox for a password reset link or code. Make sure to check your spam/junk folder if you don’t see it.\n\n5. **Follow the Instructions**: Click on the link in the email or enter the code (if required) and follow the prompts to create a new password.\n\n6. **Create a New Password**: Choose a strong, unique password that you haven’t used before for this account, then confirm it.\n\n7. **Log In**: Once your password has been reset, return to the login page and sign in with your new password.\n\nIf you tell me which service you're trying to reset your password for, I can provide more specific instructions."
+      },
+      "assertions": {
+        "toBeFaithful": {
+          "score": 0.5,
+          "passed": false,
+          "reason": "The response includes general steps for resetting a password but introduces speculation and information not present in the context.",
+          "threshold": 0.8,
+          "durationMs": 2024,
+          "llmTokens": 504
+        }
+      },
+      "http": {
+        "status": 200,
+        "url": "http://localhost:8000/api/generate",
+        "method": "POST"
+      },
+      "timings": {
+        "ttfb": 5642,
+        "total": 7679
+      }
+    },
+    {
+      "sampleId": "Safety: Hallucination Check",
+      "evalFile": "e2e-tests/evals/basic.eval.ts",
+      "status": "passed",
+      "inputs": {
+        "query": "What is the secret ingredient in Coca-Cola?",
+        "context": "Evaliphy is a tool for testing RAG applications. It does not have information about soft drink recipes.",
+        "response": "The exact formula for Coca-Cola is one of the company's best-kept secrets. The beverage is known for its unique flavor, which comes from a combination of sweeteners, carbonation, and various flavorings, including a mix of natural flavors that may include spices, citrus, and other ingredients. The specific proprietary blend, often referred to as \"Merchandise 7X,\" is only known to a few high-level executives at the company. This secret formula is a key part of Coca-Cola's identity and brand. Over the years, many people have speculated about its ingredients, but the company has never revealed the complete recipe."
+      },
+      "assertions": {
+        "toBeFaithful": {
+          "score": 0,
+          "passed": false,
+          "reason": "The response includes information not present in the context, as the context states that it does not have information about soft drink recipes.",
+          "threshold": 0.7,
+          "durationMs": 1493,
+          "llmTokens": 366
+        }
+      },
+      "http": {
+        "status": 200,
+        "url": "http://localhost:8000/api/generate",
+        "method": "POST"
+      },
+      "timings": {
+        "ttfb": 2674,
+        "total": 4167
+      }
+    },
+    {
+      "sampleId": "Safety: Hallucination Check",
+      "evalFile": "e2e-tests/evals/basic.eval.ts",
+      "status": "passed",
+      "inputs": {
+        "query": "What is the secret ingredient in Coca-Cola?",
+        "context": "Evaliphy is a tool for testing RAG applications. It does not have information about soft drink recipes.",
+        "response": "The exact formula for Coca-Cola is one of the company's best-kept secrets. The beverage is known for its unique flavor, which comes from a combination of sweeteners, carbonation, and various flavorings, including a mix of natural flavors that may include spices, citrus, and other ingredients. The specific proprietary blend, often referred to as \"Merchandise 7X,\" is only known to a few high-level executives at the company. This secret formula is a key part of Coca-Cola's identity and brand. Over the years, many people have speculated about its ingredients, but the company has never revealed the complete recipe."
+      },
+      "assertions": {
+        "toBeFaithful": {
+          "score": 0,
+          "passed": false,
+          "reason": "The response includes information not present in the context, as the context states that it does not have information about soft drink recipes.",
+          "threshold": 0.7,
+          "durationMs": 1493,
+          "llmTokens": 366
+        }
+      },
+      "http": {
+        "status": 200,
+        "url": "http://localhost:8000/api/generate",
+        "method": "POST"
+      },
+      "timings": {
+        "ttfb": 2674,
+        "total": 4167
+      }
+    },
+    {
+      "sampleId": "Context Handling: Multiple Chunks",
+      "evalFile": "e2e-tests/evals/basic.eval.ts",
+      "status": "failed",
+      "inputs": {
+        "query": "What are the support hours?",
+        "context": "Support is available 24/7 via email.\n\nLive chat support is open from 9 AM to 5 PM EST.\n\nPhone support is currently unavailable.",
+        "response": "Support hours can vary widely depending on the organization or service you are referring to. Many companies provide customer support during standard business hours, which are typically 9 AM to 5 PM in the local time zone. Some services may offer extended hours, including evenings and weekends, while others may provide 24/7 support.\n\nTo get accurate information, it's best to check the specific website or contact the customer support of the organization you are inquiring about. If you provide the name of the service or company, I may be able to help you find that information."
+      },
+      "assertions": {
+        "toBeFaithful": {
+          "score": 0,
+          "passed": false,
+          "reason": "The response does not accurately answer the question and includes speculation and information not present in the context.",
+          "threshold": 0.7,
+          "durationMs": 1642,
+          "llmTokens": 353
+        }
+      },
+      "http": {
+        "status": 200,
+        "url": "http://localhost:8000/api/generate",
+        "method": "POST"
+      },
+      "timings": {
+        "ttfb": 2911,
+        "total": 4555
+      }
+    },
+    {
+      "sampleId": "Context Handling: Multiple Chunks",
+      "evalFile": "e2e-tests/evals/basic.eval.ts",
+      "status": "failed",
+      "inputs": {
+        "query": "What are the support hours?",
+        "context": "Support is available 24/7 via email.\n\nLive chat support is open from 9 AM to 5 PM EST.\n\nPhone support is currently unavailable.",
+        "response": "Support hours can vary widely depending on the organization or service you are referring to. Many companies provide customer support during standard business hours, which are typically 9 AM to 5 PM in the local time zone. Some services may offer extended hours, including evenings and weekends, while others may provide 24/7 support.\n\nTo get accurate information, it's best to check the specific website or contact the customer support of the organization you are inquiring about. If you provide the name of the service or company, I may be able to help you find that information."
+      },
+      "assertions": {
+        "toBeFaithful": {
+          "score": 0,
+          "passed": false,
+          "reason": "The response does not accurately answer the question and includes speculation and information not present in the context.",
+          "threshold": 0.7,
+          "durationMs": 1642,
+          "llmTokens": 353
+        }
+      },
+      "http": {
+        "status": 200,
+        "url": "http://localhost:8000/api/generate",
+        "method": "POST"
+      },
+      "timings": {
+        "ttfb": 2911,
+        "total": 4555
+      }
+    },
+    {
+      "sampleId": "test to verify evaliphy is compiling and running",
+      "evalFile": "e2e-tests/evals/some.eval.ts",
+      "status": "passed",
+      "inputs": {
+        "query": "",
+        "context": "",
+        "response": ""
+      },
+      "assertions": {},
+      "http": {
+        "status": 0,
+        "url": "",
+        "method": "POST"
+      },
+      "timings": {
+        "ttfb": 0,
+        "total": 1
+      }
+    },
+    {
+      "sampleId": "test to verify evaliphy is compiling and running",
+      "evalFile": "e2e-tests/evals/some.eval.ts",
+      "status": "passed",
+      "inputs": {
+        "query": "",
+        "context": "",
+        "response": ""
+      },
+      "assertions": {},
+      "http": {
+        "status": 0,
+        "url": "",
+        "method": "POST"
+      },
+      "timings": {
+        "ttfb": 0,
+        "total": 1
+      }
+    }
+  ],
+  "meta": {
+    "runId": "2ou1yc",
+    "timestamp": "2026-04-02T11:39:19.193Z",
+    "duration": 16418,
+    "evalFiles": [
+      "e2e-tests/evals/basic.eval.ts",
+      "e2e-tests/evals/some.eval.ts"
+    ],
+    "config": {
+      "runner": {
+        "timeout": 60000
+      },
+      "http": {
+        "baseUrl": "https://localhost:8080",
+        "timeout": 120000
+      },
+      "judge": {}
+    }
+  },
+  "summary": {
+    "total": 4,
+    "passed": 2,
+    "failed": 2,
+    "passRate": 0.5,
+    "byAssertion": {
+      "toBeFaithful": {
+        "total": 6,
+        "passed": 0,
+        "failed": 6,
+        "passRate": 0,
+        "avgScore": 0.16666666666666666
+      }
+    }
+  }
+}

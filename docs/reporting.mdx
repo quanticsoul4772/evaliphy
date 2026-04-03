@@ -1,0 +1,53 @@
+# Reporting
+
+Evaliphy provides a professional, real-time reporting system to help you track and analyze your evaluation runs.
+
+## Console Reporter
+
+The `ConsoleReporter` is the default reporter. It provides a clean, streamed output to your terminal with:
+- **Real-time updates**: See test results as they happen.
+- **Detailed failures**: Clear error messages, codes, and hints to help you debug.
+- **Run summary**: A final overview of pass/fail counts and total duration.
+
+### Configuration
+
+You can customize the console output in your `evaliphy.config.ts`:
+
+```ts
+import { defineConfig } from 'evaliphy';
+import { ConsoleReporter } from 'evaliphy/reporters';
+
+export default defineConfig({
+  reporters: [
+    new ConsoleReporter({
+      verbose: false,      // Show detailed logs and stack traces
+      showSlowAt: 1000,    // Highlight tests slower than 1000ms in yellow
+      compact: false       // One-line per test, hides failure details inline
+    })
+  ]
+});
+```
+
+## Custom Reporters
+
+If you need to integrate Evaliphy with your own tools (e.g., sending results to a database or a custom dashboard), you can implement your own reporter.
+
+### Example
+
+```ts
+import { EvaliphyReporter, TestPassPayload } from 'evaliphy';
+
+class MyCustomReporter implements EvaliphyReporter {
+  name = 'my-custom-reporter';
+
+  onTestPass(payload: TestPassPayload) {
+    console.log(`Test ${payload.testName} passed!`);
+  }
+}
+```
+
+## Default Behavior
+
+- **Automatic**: If you don't configure any reporters, Evaliphy uses the `ConsoleReporter` by default.
+- **Opt-out**: To disable all output, provide an empty array: `reporters: []`.
+- **Override**: If you provide custom reporters, the default console reporter is disabled unless you explicitly include it in the `reporters` list.

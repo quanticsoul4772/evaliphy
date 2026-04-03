@@ -1,9 +1,8 @@
-#!/usr/bin/env node
-import { program } from 'commander'
-import { resolve } from 'path'
-import { pathToFileURL } from 'url'
-import {handleFatalError, parseCLI} from './config/cliConfigUtil.js'
-import { runRegistry } from './runner/runEval.js'
+import { program } from 'commander';
+import { ConfigLoader } from 'evaliphy-core';
+import { handleFatalError, parseCLI } from './config/cliConfigUtil.js';
+import { createProject } from "./initProject/createFolderStructure.js";
+import { runRegistry } from './runner/runEval.js';
 
 program
     .name('evaliphy')
@@ -11,23 +10,32 @@ program
     .description('Evaliphy — eval runner for LLM pipelines')
 
 program
-    .command('eval <file> [extraArgs...]')
-    .description('Run eval function from a file')
-    .option('--model <model>', 'model to use')
-    .option('--timeout <ms>', 'timeout per eval in ms', '30000')
-    .option('--concurrency <n>', 'number of parallel evals', '1')
-    .allowUnknownOption(true)
-    .action(async (file, _extraArgs, opts) => {
-        try {
-            // 1. Resolve and load the user's eval file
-            const absolutePath = resolve(process.cwd(), file)
-            await import(pathToFileURL(absolutePath).href)
+    .command('init <project-name>')
+    .description('Create project structure as recommended by Evaliphy.')
+    .action((projectName: string) => {
+        createProject(projectName);
+    });
 
-            // 2. Parse CLI options into config
+program
+    .command('eval [file]')
+    .description('Run eval function from a file or discover files')
+    .option('--config-file <config>', 'Config file to use')
+    .option('--eval-dir <path>', 'directory to discover tests in', 'evals')
+    .option('--match <pattern>', 'glob pattern to match test files', (val, memo: string[]) => {
+        memo.push(val);
+        return memo;
+    })
+    .allowUnknownOption(true)
+    .action(async (file, opts) => {
+        try {
+            // 1. Parse CLI options into config
             const cliConfig = parseCLI(opts)
 
-            // 3. Run the registry with config
-            await runRegistry(cliConfig)
+            // 2. Initialize ConfigLoader with CLI overrides
+            ConfigLoader.initialize(cliConfig);
+
+            // 3. Run the registry (discovery mode if no file provided)
+            await runRegistry(file)
 
             process.exit(0)
         } catch (err) {

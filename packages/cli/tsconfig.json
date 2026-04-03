@@ -6,5 +6,11 @@
     "outDir": "./dist",
     "rootDir": "./src"
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [
+    { "path": "../core" },
+    { "path": "../client" },
+    { "path": "../reporters" },
+    { "path": "../ai" }
+  ]
 }
