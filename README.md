@@ -4,6 +4,8 @@
 
 The first QA-centric SDK for testing Retrieval-Augmented Generation. Write end-to-end evaluations for your AI pipelines using the exact same workflow you use for Playwright. No prompt engineering required.
 
+Visit https://evaliphy.com for more details.
+
 [![npm version](https://img.shields.io/npm/v/evaliphy/beta.svg)](https://www.npmjs.com/package/evaliphy)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -37,32 +39,45 @@ evaluate("Return Policy Chat", async ({ httpClient }) => {
 });
 ```
 
-## Built for Quality Engineers, not Data Scientists.
+## Why Evaliphy?
+It fits where your tests already live.
+- TypeScript-native — eval files sit in your repo alongside your other tests
+- Runs in CI like any other test suite
+- Produces reports your whole team can read
+- You test your real API.
 
-### 📥 Bring Your Own Data
-No magic background context. Pass your golden data, CSV rows, or database records directly into the assertions so you always know exactly what is being tested.
+Makes HTTP calls to your actual running service
+- Evaluates what comes back — not a notebook, not a dataset loaded in memory
+- If your RAG system breaks in production, Evaliphy catches it the same way your E2E tests catch a broken UI
+- The judges are built in.
 
-### 🤖 Zero-Config LLM Judge
-We spent hundreds of hours benchmarking LLM-as-a-judge prompts so you don't have to. Just provide your OpenAI or Anthropic API key, and Evaliphy handles the prompting, parsing, and retry logic.
+Faithfulness, relevance, groundedness — the assertions that matter are shipped with the framework
+- Call expect(response).toBeFaithful() and Evaliphy handles the rest
+- No prompt writing, no LLM wiring, no configuration beyond pointing it at your API
+- Configurable without being overwhelming.
 
-### 🚀 Seamless CI/CD
-It’s just Node.js. Run your RAG evaluations in GitHub Actions, GitLab CI, or Jenkins using the standard `npx evaliphy run` command. Get clear, console-native pass/fail reports.
+Sensible defaults out of the box — works without touching the config.
+- Override the judge model globally, per eval file, or per individual assertion(to be developed).
+- Bring your own prompts if the built-in ones don't fit your domain.
+- It speaks QA.
+
+Assertion style will feel familiar if you have used Jest, Vitest, or Playwright
+- No new mental model to learn
+- You are applying what you already know to AI output instead of UI behaviour
+
 
 ## How it Works
 
-1.  **Configure Once:** Set your LLM judge models (e.g., `gpt-4o-mini`) and confidence thresholds globally in `evaliphy.config.ts`.
-2.  **Collect & Execute:** Evaliphy builds a deterministic test tree, then executes your HTTP calls and RAG pipelines in parallel.
-3.  **Evaluate & Report:** The built-in LLM judge evaluates the responses against your assertions and returns human-readable failure reasons—not just a `false` boolean.
+![Evaliphy Internal Mechanism](./website/public/images/how-evaliphy-works.png)
 
 ## Join the Beta Program
 
 We are currently in open beta. We’re looking for QA teams and software engineers building RAG applications to help us refine the API and expand our matcher library.
 
 - ✅ Free for commercial use during Beta
-- ✅ Direct access to the core engineering team
 - ✅ Influence the v1.0 roadmap
 
-[Star on GitHub](https://github.com/priyanshus/evaliphy) | [Join the Discord](https://discord.gg/evaliphy)
+[Star on GitHub](https://github.com/priyanshus/evaliphy) | [Submit Feedback](https://forms.gle/9ztrqUCXUg2YGSJJA)]
 
 ## License
 
