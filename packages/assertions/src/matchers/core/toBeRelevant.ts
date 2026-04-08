@@ -21,6 +21,6 @@ export class ToBeRelevantMatcher extends BaseLLMMatcher {
 
 export const toBeRelevantDefinition: AssertionDefinition = createLLMDefinition(
   'toBeRelevant',
-  ['question', 'response'],
+  ['question', 'context', 'response'],
   '0.0 to 1.0, higher is more relevant'
 );

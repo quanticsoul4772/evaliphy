@@ -1,4 +1,4 @@
-import {evaluate, expect} from "../../dist/index.cjs";
+import { evaluate, expect } from "../../dist/index.cjs";
 
 evaluate.use({
   http: {

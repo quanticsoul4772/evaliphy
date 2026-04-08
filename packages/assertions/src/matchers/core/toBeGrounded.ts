@@ -21,6 +21,6 @@ export class ToBeGroundedMatcher extends BaseLLMMatcher {
 
 export const toBeGroundedDefinition: AssertionDefinition = createLLMDefinition(
   'toBeGrounded',
-  ['context', 'response'],
+  ['question', 'context', 'response'],
   '0.0 to 1.0, higher is more grounded'
 );

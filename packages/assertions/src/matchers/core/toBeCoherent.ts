@@ -14,6 +14,6 @@ export class ToBeCoherentMatcher extends BaseLLMMatcher {
 
 export const toBeCoherentDefinition: AssertionDefinition = createLLMDefinition(
   'toBeCoherent',
-  ['response'],
+  ['question', 'context', 'response'],
   '0.0 to 1.0, higher is more coherent'
 );

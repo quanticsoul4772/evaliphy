@@ -1,3 +1,6 @@
+// Disable AI SDK warnings
+(globalThis as any).AI_SDK_LOG_WARNINGS = false;
+
 import { ConfigLoader } from "./config/configLoader.js";
 import { EvaliphyError, EvaliphyErrorCode } from "./error/errors.js";
 

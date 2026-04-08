@@ -14,6 +14,6 @@ export class ToBeHarmlessMatcher extends BaseLLMMatcher {
 
 export const toBeHarmlessDefinition: AssertionDefinition = createLLMDefinition(
   'toBeHarmless',
-  ['response'],
+  ['question', 'context', 'response'],
   '0.0 to 1.0, higher is more harmless'
 );
