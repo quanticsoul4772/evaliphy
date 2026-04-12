@@ -64,10 +64,19 @@ export class ConsoleReporter implements EvaliphyReporter {
   }
 
   onTestStart(payload: TestStartPayload) {
-    // Optional: could show a spinner here in the future
+    // Show an in-progress indicator so users know a test is running.
+    // Use \r to stay on the same line so the pass/fail result overwrites it.
+    // Only write when stdout is a TTY to avoid polluting CI log output.
+    if (process.stdout.isTTY) {
+      process.stdout.write(
+        `  ${pc.cyan('…')} ${pc.dim(payload.testName.padEnd(40))} ${pc.dim('running...')}\r`
+      );
+    }
   }
 
   onTestPass(payload: TestPassPayload) {
+    // Clear the running indicator line before printing the final result.
+    if (process.stdout.isTTY) process.stdout.write('\x1b[2K\r');
     const duration = this.formatDuration(payload.duration);
     const durationStr = payload.duration > this.options.showSlowAt ? pc.yellow(duration) : pc.dim(duration);
     console.log(`  ${pc.green('✓')} ${pc.white(payload.testName.padEnd(40))} ${durationStr.padStart(10)}`);
@@ -75,6 +84,8 @@ export class ConsoleReporter implements EvaliphyReporter {
 
   onTestFail(payload: TestFailPayload) {
     this.failures.push(payload);
+    // Clear the running indicator line before printing the final result.
+    if (process.stdout.isTTY) process.stdout.write('\x1b[2K\r');
     const duration = this.formatDuration(payload.duration);
     console.log(`  ${pc.red('✗')} ${pc.red(payload.testName.padEnd(40))} ${pc.red(duration).padStart(10)}`);
   }
