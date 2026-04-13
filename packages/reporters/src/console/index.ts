@@ -92,23 +92,30 @@ export class ConsoleReporter implements EvaliphyReporter {
 
   onTestPass(payload: TestPassPayload) {
     this.stopSpinner();
+    if (process.stdout.isTTY) {
+      process.stdout.write('\r');
+    }
     const duration = this.formatDuration(payload.duration);
     const durationStr = payload.duration > this.options.showSlowAt ? pc.yellow(duration) : pc.dim(duration);
-    const lineStart = process.stdout.isTTY ? '\r' : '';
-    process.stdout.write(`${lineStart}  ${pc.green('✓')} ${pc.white(payload.testName.substring(0, 40).padEnd(40))} ${durationStr.padStart(10)}\n`);
+    console.log(`  ${pc.green('✓')} ${pc.white(payload.testName.padEnd(40))} ${durationStr.padStart(10)}`);
   }
 
   onTestFail(payload: TestFailPayload) {
     this.stopSpinner();
     this.failures.push(payload);
+    if (process.stdout.isTTY) {
+      process.stdout.write('\r');
+    }
     const duration = this.formatDuration(payload.duration);
-    const lineStart = process.stdout.isTTY ? '\r' : '';
-    process.stdout.write(`${lineStart}  ${pc.red('✗')} ${pc.red(payload.testName.substring(0, 40).padEnd(40))} ${pc.red(duration).padStart(10)}\n`);
+    console.log(`  ${pc.red('✗')} ${pc.red(payload.testName.padEnd(40))} ${pc.red(duration).padStart(10)}`);
   }
 
   onTestRetry(payload: TestRetryPayload) {
     this.stopSpinner();
-    process.stdout.write(`${process.stdout.isTTY ? '\r' : ''}  ${pc.yellow('↺')} ${pc.white(payload.testName.substring(0, 40).padEnd(40))} ${pc.dim(`(retry ${payload.attempt}/${payload.maxRetries})`).padStart(10)}\n`);
+    if (process.stdout.isTTY) {
+      process.stdout.write('\r');
+    }
+    console.log(`  ${pc.yellow('↺')} ${pc.white(payload.testName.padEnd(40))} ${pc.dim(`(retry ${payload.attempt}/${payload.maxRetries})`).padStart(10)}`);
     this.startSpinner(payload.testName);
   }
 
