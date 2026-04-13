@@ -25,6 +25,10 @@ export class ConsoleReporter implements EvaliphyReporter {
   private options: Required<ConsoleReporterOptions>;
   private startTime: number = 0;
   private failures: TestFailPayload[] = [];
+  private spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+  private spinnerIndex = 0;
+  private spinnerTimer: ReturnType<typeof setInterval> | null = null;
+  private currentTestName = '';
 
   constructor(options: ConsoleReporterOptions = {}) {
     this.options = {
@@ -32,6 +36,25 @@ export class ConsoleReporter implements EvaliphyReporter {
       showSlowAt: options.showSlowAt ?? 1000,
       compact: options.compact ?? false,
     };
+  }
+
+  private startSpinner(testName: string) {
+    if (!process.stdout.isTTY) return;
+    this.currentTestName = testName;
+    this.spinnerIndex = 0;
+    const render = () => {
+      const frame = this.spinnerFrames[this.spinnerIndex++ % this.spinnerFrames.length];
+      process.stdout.write(`\r  ${pc.cyan(frame)} ${pc.dim(testName.substring(0, 40).padEnd(40))}`);
+    };
+    render();
+    this.spinnerTimer = setInterval(render, 80);
+  }
+
+  private stopSpinner() {
+    if (this.spinnerTimer !== null) {
+      clearInterval(this.spinnerTimer);
+      this.spinnerTimer = null;
+    }
   }
 
   private formatDuration(ms: number): string {
@@ -64,23 +87,36 @@ export class ConsoleReporter implements EvaliphyReporter {
   }
 
   onTestStart(payload: TestStartPayload) {
-    // Optional: could show a spinner here in the future
+    this.startSpinner(payload.testName);
   }
 
   onTestPass(payload: TestPassPayload) {
+    this.stopSpinner();
+    if (process.stdout.isTTY) {
+      process.stdout.write('\r');
+    }
     const duration = this.formatDuration(payload.duration);
     const durationStr = payload.duration > this.options.showSlowAt ? pc.yellow(duration) : pc.dim(duration);
     console.log(`  ${pc.green('✓')} ${pc.white(payload.testName.padEnd(40))} ${durationStr.padStart(10)}`);
   }
 
   onTestFail(payload: TestFailPayload) {
+    this.stopSpinner();
     this.failures.push(payload);
+    if (process.stdout.isTTY) {
+      process.stdout.write('\r');
+    }
     const duration = this.formatDuration(payload.duration);
     console.log(`  ${pc.red('✗')} ${pc.red(payload.testName.padEnd(40))} ${pc.red(duration).padStart(10)}`);
   }
 
   onTestRetry(payload: TestRetryPayload) {
+    this.stopSpinner();
+    if (process.stdout.isTTY) {
+      process.stdout.write('\r');
+    }
     console.log(`  ${pc.yellow('↺')} ${pc.white(payload.testName.padEnd(40))} ${pc.dim(`(retry ${payload.attempt}/${payload.maxRetries})`).padStart(10)}`);
+    this.startSpinner(payload.testName);
   }
 
   onRunEnd(payload: RunEndPayload) {
