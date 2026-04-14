@@ -18,21 +18,21 @@ body:
     id: reproduction-steps
     attributes:
       label: Reproduction steps
-      description: How do you trigger this bug? Please provide a minimal reproduction if possible.
+      description: How do you trigger this bug? Please provide a minimal reproduction if possible. (Optional if not applicable)
       placeholder: |
         1.
         2.
         3.
     validations:
-      required: true
+      required: false
   - type: textarea
     id: version
     attributes:
       label: Evaliphy version
-      description: Which version of Evaliphy are you using?
+      description: Which version of Evaliphy are you using? (Optional)
       placeholder: e.g. 1.0.0-beta.1
     validations:
-      required: true
+      required: false
   - type: textarea
     id: logs
     attributes:
